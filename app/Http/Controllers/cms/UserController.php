@@ -16,7 +16,7 @@ class UserController extends Controller
             $input= json_decode($request->getContent(), true);
             $validator=Validator::make($input, [
                 'inTime' =>'required',
-                'coords' =>'required|json',
+                'coords' =>'required|array',
                 'location'=>'required|string',
             ]);
             if($validator->fails()){
