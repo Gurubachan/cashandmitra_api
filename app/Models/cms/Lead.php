@@ -19,9 +19,13 @@ use Illuminate\Database\Eloquent\Model;
  * @property integer id
  * @property mixed interestedIn
  * @property mixed dealSize
+ * @property mixed entryLocation
  */
 class Lead extends Model
 {
     use HasFactory;
+    protected $casts = [
+        'entryLocation' => 'array',
+    ];
 
 }

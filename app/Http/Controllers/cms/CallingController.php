@@ -41,7 +41,7 @@ class CallingController extends Controller
 
     public function getLead($id=null){
         try{
-            $lead=DB::table('leads')
+            /*$lead=DB::table('leads')
                 ->join('tbl_lead_calling','leads.id','=','tbl_lead_calling.leadId')
                 ->leftJoin('tbl_pin_code',"leads.pinCodeId","=","tbl_pin_code.id")
                 ->leftjoin("tbl_business_type","tbl_business_type.id","=","leads.businessType")
@@ -51,11 +51,24 @@ class CallingController extends Controller
                     "leads.name",'leads.contact','leads.email','leads.address',
                     "leads.isInterested","leads.leadClosed","leads.leadSource",
                     "leads.isActive","leads.interestedIn","leads.dealSize","leads.leadType",
-                    "leads.callingDate","leads.callingId","leads.entryBy",
+                    "leads.callingDate","leads.callingId","leads.entryBy","leads.entryLocation",
                     "tbl_pin_code.*",
                     "tbl_business_type.*",
-                    'users.fname','users.lname');
-
+                    'users.fname','users.lname');*/
+            $lead=Lead::select(
+                'tbl_lead_calling.id as leadCallingId','leads.id',
+                "leads.name",'leads.contact','leads.email','leads.address',
+                "leads.isInterested","leads.leadClosed","leads.leadSource",
+                "leads.isActive","leads.interestedIn","leads.dealSize","leads.leadType",
+                "leads.callingDate","leads.callingId","leads.entryBy","leads.entryLocation",
+                "tbl_pin_code.*",
+                "tbl_business_type.*",
+                'users.fname','users.lname')
+                ->join('tbl_lead_calling','leads.id','=','tbl_lead_calling.leadId')
+                ->leftJoin('tbl_pin_code',"leads.pinCodeId","=","tbl_pin_code.id")
+                ->leftjoin("tbl_business_type","tbl_business_type.id","=","leads.businessType")
+                ->leftjoin('users','users.id','=','leads.entryBy')
+                ;
             if(isset($id) && $id!=null){
                 $data= $lead->where('tbl_lead_calling.assignTo', Auth::user()->id)
                     ->where('leads.id',$id)

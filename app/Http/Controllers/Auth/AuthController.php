@@ -5,13 +5,12 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\cms\SMSController;
 use App\Http\Controllers\Controller;
 
-use App\Mail\Verification;
-use App\Models\cms\EmailVerification;
+
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
+
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
@@ -69,7 +68,14 @@ class AuthController extends Controller
                 return $returnData=array('response'=>false, 'message'=>$validator->errors());
             }
             //return $validator->validated();
-            if(!auth()->attempt(['contact'=>$inputs['contact'],'password'=>$inputs['password'],'isActive'=>1])){
+            if(!auth()->attempt(
+                [
+                    'contact'=>$inputs['contact'],
+                    'password'=>$inputs['password'],
+                    'isActive'=>1,
+                    'loginAllowed'=>1
+                ]
+            )){
                 return response()->json(['response'=>false,'message'=>'Invalid Credential or User not active'],400);
             }
 
@@ -180,7 +186,7 @@ class AuthController extends Controller
                 ['users.isActive',true],
             ];
            $input= json_decode($request->getContent(),true);
-            if(isset($input)){
+            if(isset($input) && isset($input['key'])){
                 array_push($where, ['users.'.$input['key'],$input['value']]);
             }
 

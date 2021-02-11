@@ -5,11 +5,14 @@ use App\Http\Controllers\cms\BusinessTypeController;
 use App\Http\Controllers\cms\CallingController;
 use App\Http\Controllers\cms\EmailController;
 use App\Http\Controllers\cms\LeadController;
+use App\Http\Controllers\cms\MasterDataController;
 use App\Http\Controllers\cms\PinCodeController;
 use App\Http\Controllers\cms\SMSController;
 use App\Http\Controllers\cms\TaskController;
+use App\Http\Controllers\cms\UserController;
 use App\Http\Controllers\services\AepsController;
-use Illuminate\Http\Request;
+
+use App\Http\Controllers\services\ServiceController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -36,8 +39,12 @@ Route::group(['prefix'=>'auth'],function (){
     Route::put('reset-password',[AuthController::class,'resetPassword'])->name('reset-password');
     Route::post('verify',[SMSController::class,'verifyOtp']);
 });
-
+Route::group(['prefix'=>'user', 'middleware'=>'auth:api'], function () {
+    Route::post('attend',[UserController::class,'markAttendance']);
+});
 Route::group(['middleware'=>'auth:api'], function (){
+    Route::get('userGroup',[MasterDataController::class,'userGroup']);
+    Route::get('userType',[MasterDataController::class,'userType']);
     Route::get('user',[AuthController::class,'getUser'])->name('user');
     Route::post('users',[AuthController::class,'getUsers']);
     Route::get('lead',[LeadController::class,'index']);
@@ -66,6 +73,7 @@ Route::group(["prefix"=>'profile', 'middleware'=>'auth:api'], function (){
 });
 
 Route::group(['prefix'=>'services', 'middleware'=>'auth:api'], function (){
+    Route::get('service',[ServiceController::class,'index']);
     Route::post('iciciKyc',[AepsController::class,'iciciKyc']);
 
 });

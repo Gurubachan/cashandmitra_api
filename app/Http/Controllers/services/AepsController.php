@@ -4,9 +4,9 @@ namespace App\Http\Controllers\services;
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Controller;
-use http\Client\Curl\User;
+
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+
 use Illuminate\Support\Facades\Validator;
 
 class AepsController extends Controller
