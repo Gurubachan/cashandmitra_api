@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-
 class LeadController extends Controller
 {
     public function index(Request $request){
@@ -117,10 +116,14 @@ class LeadController extends Controller
             $lead->interestedIn=$input['interestedIn'];
             $lead->dealSize=$input['dealSize'];
             $lead->entryLocation=isset($input['entryLocation'])?$input['entryLocation']:null;
-            $lead->entryLocation=isset($input['entryAddress'])?$input['entryAddress']:null;
+            $lead->entryAddress=isset($input['entryAddress'])?$input['entryAddress']:null;
             $lead->save();
 
-            return response()->json(['response'=>true,'message'=>'New lead created','data'=>$this->getLead($lead->id)]);
+            return response()->json([
+                'response'=>true,
+                'message'=>'New lead created',
+                'data'=>$this->getLead($lead->id)
+            ]);
         }catch (\Exception $exception){
             return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
         }

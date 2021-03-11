@@ -41,20 +41,6 @@ class CallingController extends Controller
 
     public function getLead($id=null){
         try{
-            /*$lead=DB::table('leads')
-                ->join('tbl_lead_calling','leads.id','=','tbl_lead_calling.leadId')
-                ->leftJoin('tbl_pin_code',"leads.pinCodeId","=","tbl_pin_code.id")
-                ->leftjoin("tbl_business_type","tbl_business_type.id","=","leads.businessType")
-                ->leftjoin('users','users.id','=','leads.entryBy')
-                ->select(
-                    'tbl_lead_calling.id as leadCallingId','leads.id',
-                    "leads.name",'leads.contact','leads.email','leads.address',
-                    "leads.isInterested","leads.leadClosed","leads.leadSource",
-                    "leads.isActive","leads.interestedIn","leads.dealSize","leads.leadType",
-                    "leads.callingDate","leads.callingId","leads.entryBy","leads.entryLocation",
-                    "tbl_pin_code.*",
-                    "tbl_business_type.*",
-                    'users.fname','users.lname');*/
             $lead=Lead::select(
                 'tbl_lead_calling.id as leadCallingId','leads.id',
                 "leads.name",'leads.contact','leads.email','leads.address',
@@ -263,8 +249,6 @@ select tbl_lead_calling.leadId from tbl_lead_calling
                     DB::raw('count(if(tbl_lead_calling.isCalled,1,null)) as called'),
                     DB::raw('count(tbl_lead_calling.id) as assigned')
                 );
-
-
             if(Auth::user()->role == 13){
                 $callingCount->where('tbl_lead_calling.assignTo','=',Auth::user()->id);
             }
@@ -274,8 +258,7 @@ select tbl_lead_calling.leadId from tbl_lead_calling
             $data=$callingCount
                 ->groupBy('tbl_lead_calling.assignTo','tbl_lead_calling.callingOn', 'users.fname','users.lname')
                 ->orderByDesc('tbl_lead_calling.callingOn')
-                ->limit(10)
-                ->get();
+                ->simplePaginate();
 
             if(count($data)>0){
                 return response()->json(['response'=>true,'message'=>'Record found','data'=>$data]);

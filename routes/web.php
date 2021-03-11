@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
 //    return view('welcome');
-    return response('<h1 style="text-align: center">Server Running Properly</h1>');
+    return response('<h1 style="text-align: center">CASHAND Server Running Properly</h1>');
 });
 
 //Clear Cache facade value:
@@ -61,6 +61,16 @@ Route::get('/config-clear', function() {
 Route::get('/storage-link', function (){
     $exitCode= Artisan::call('storage:link');
     return '<h1>Storage link created</h1>';
+});
+Route::get('/clear-compiled', function (){
+    $exitCode= Artisan::call('clear-compiled');
+    return '<h1>Compiled services and packages files removed!
+</h1>';
+});
+Route::get('/dump-autoload', function (){
+    exec('composer dump-autoload');
+    return '<h1>Dump autoload executed
+</h1>';
 });
 Route::get('/time', function (){
     return date('Y-m-d H:i:s');

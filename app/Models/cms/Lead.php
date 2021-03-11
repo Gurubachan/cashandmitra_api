@@ -20,6 +20,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property mixed interestedIn
  * @property mixed dealSize
  * @property mixed entryLocation
+ * @property mixed entryAddress
  */
 class Lead extends Model
 {
