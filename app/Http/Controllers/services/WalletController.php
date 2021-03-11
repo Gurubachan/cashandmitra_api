@@ -7,6 +7,7 @@ use App\Models\services\Commission;
 use App\Models\services\ICICIAEPSTransaction;
 use App\Models\services\Wallet;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class WalletController extends Controller
 {
@@ -15,7 +16,17 @@ class WalletController extends Controller
      * */
     public function checkBalance(Request $request){
         try {
-            return response()->json(['response'=>true,'message'=>"Balance Fetched",'data'=>['balance'=>500.00]]);
+            $wallet=Wallet::where('user_id','=',Auth::user()->id)
+                ->limit(1)
+                ->orderby('id','DESC')
+                ->get();
+            if(count($wallet)>0){
+                return response()->json(['response'=>true,'message'=>"Balance Fetched",'data'=>['balance'=>$wallet[0]->closing_balance]]);
+            }else{
+                return response()->json(['response'=>true,'message'=>"Balance Fetched",'data'=>['balance'=>0]]);
+            }
+
+
         }catch (\Exception $exception){
             return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
         }

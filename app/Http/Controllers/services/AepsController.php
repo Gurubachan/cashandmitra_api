@@ -12,6 +12,7 @@ use App\Models\services\UserWiseService;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class AepsController extends Controller
@@ -263,6 +264,29 @@ class AepsController extends Controller
                 }
 
 
+        }catch (\Exception $exception){
+            return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
+        }
+    }
+
+    public function getMyTransactionSummary(Request $request){
+        try {
+
+        }catch (\Exception $exception){
+            return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
+        }
+    }
+
+    public function myAepsTransaction(Request $request){
+        try {
+            $aeps= ICICIAEPSTransaction::where('userId','=', Auth::user()->id)
+                ->where(DB::raw('date(`created_at`)'), date("Y-m-d"))
+                ->get();
+            if(count($aeps)>0){
+                return response()->json(['response'=>true,'message'=>'Record fetched','data'=>$aeps]);
+            }else{
+                return response()->json(['response'=>false,'message'=>'No record fetched'],404);
+            }
         }catch (\Exception $exception){
             return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
         }
