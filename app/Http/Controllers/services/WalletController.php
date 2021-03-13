@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\services\Commission;
 use App\Models\services\ICICIAEPSTransaction;
 use App\Models\services\Wallet;
+use http\Env\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -32,9 +33,13 @@ class WalletController extends Controller
         }
     }
 
-    public function walletTransaction(){
+    public function walletTransaction(Request $request){
         try {
-
+            $input= json_decode($request->getContent(), true);
+            $transaction=Wallet::where('user_id', Auth::user()->id)
+                ->orderBy('id','DESC')
+                ->simplePaginate();
+            return response()->json(['response'=>true,'message'=>'Record fetched','data'=>$transaction]);
         }catch (\Exception $exception){
             return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
         }
@@ -43,7 +48,7 @@ class WalletController extends Controller
     public function walletOperationaeps($transactionData){
         try {
             //get user transaction details
-            if($transactionData->txnType == "CW" && $transactionData->status == "SUCCESS"){
+            if($transactionData->txnType == "CW" && $transactionData->status == "SUCCESS" && $transactionData->isWalletUpdate == false){
            $wallet= Wallet::where('user_id','=',$transactionData->userId)
                ->limit(1)
                ->orderBy('id','DESC')
@@ -57,6 +62,7 @@ class WalletController extends Controller
                 $updateWallet->description="ICICI Aeps Cash Withdrawal";
                 $updateWallet->transaction_date=$transactionData->created_at;
                 $updateWallet->status="success";
+                $updateWallet->wallet_operation="cr";
                 if(count($wallet)==1){
                    $updateWallet->previous_balance=$wallet[0]->closing_balance;
                    $updateWallet->transacting_amount=$transactionData->amount;
@@ -67,7 +73,7 @@ class WalletController extends Controller
                     $aepsICICI->isWalletUpdate=true;
                     $aepsICICI->walletReferenceNo=$updateWallet->id;
                     $aepsICICI->save();
-                   return response()->json(['response'=>true,'message'=>'Wallet updated','data'=>$updateWallet]);
+                   return $updateWallet;
                }else{
                    $updateWallet->previous_balance=0.00;
                    $updateWallet->transacting_amount=$transactionData->amount;
@@ -111,6 +117,7 @@ class WalletController extends Controller
                 $walletUpdate->previous_balance=$wallet->closing_balance;
                 $walletUpdate->transacting_amount=$commission[0]->commission;
                 $walletUpdate->closing_balance=$wallet->closing_balance + $commission[0]->commission;
+                $walletUpdate->wallet_operation="cr";
                 $walletUpdate->save();
             }
         }catch (\Exception $exception){

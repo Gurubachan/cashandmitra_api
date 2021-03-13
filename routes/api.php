@@ -83,11 +83,11 @@ Route::group(['prefix'=>'services', 'middleware'=>'auth:api'], function (){
     Route::post('iciciKyc',[AepsController::class,'iciciKyc']);
     Route::post('checkKyc',[AepsController::class,'iciciKYCStatusCheck']);
     Route::post('initTransaction',[AepsController::class,'initTransaction']);
+    Route::post('transaction',[AepsController::class,'myAepsTransaction']);
 
 
 });
 Route::group(['prefix'=>'ICICIAeps'], function (){
-    Route::post('transaction',[AepsController::class,'myAepsTransaction']);
     Route::get('CheckStatus',[AepsController::class,'checkStatus']);
     Route::get('UpdateStatus',[AepsController::class,'updateStatus']);
     Route::get('checkTxnStatus/{transactionId}',[AepsController::class,'checkAePSTxnStatus']);
@@ -97,6 +97,7 @@ Route::group(['prefix'=>'ICICIAeps'], function (){
 
 Route::group(['prefix'=>'wallet','middleware'=>'auth:api'], function(){
     Route::post('myBalance',[WalletController::class,'checkBalance']);
+    Route::post('statement',[WalletController::class,'walletTransaction']);
 });
 
 Route::get('pinCode/{code}',[PinCodeController::class,'fetch']);

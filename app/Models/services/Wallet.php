@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property mixed service_id
  * @property mixed transacting_amount
  * @property mixed id
+ * @property mixed|string wallet_operation
  */
 class Wallet extends Model
 {
