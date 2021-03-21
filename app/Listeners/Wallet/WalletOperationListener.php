@@ -2,6 +2,7 @@
 
 namespace App\Listeners\Wallet;
 
+use App\Http\Controllers\services\AepsController;
 use App\Http\Controllers\services\WalletController;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
@@ -32,7 +33,9 @@ class WalletOperationListener
         //$result=json_decode($walletResult->getContent());
         logger($walletResult);
         if($walletResult!=false){
-            $commissionResponse=$wallet->walletAepsCommission($walletResult);
+            $aeps=new AepsController();
+            $aeps->walletUpdatedFromICICIAEPS($transaction, $walletResult);
+            $commissionResponse=$wallet->walletCommission($walletResult, "Aeps Commission","cr");
             logger($commissionResponse);
         }
 

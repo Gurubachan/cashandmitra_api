@@ -65,19 +65,22 @@ class AepsController extends Controller
                 'population'=>$inputs['population'],
                 'locationType'=>$inputs['shopLocation'],
             );
-            $url="http://uat.dhansewa.com/AEPS/APIBCRegistration";
+            $onboard = new BCOnboarding();
+            $onboard->userId=Auth::user()->id;
+            $onboard->serviceId=1;
+            $onboard->providerid=2;
+            $onboard->requested_data=$onBoarding;
+
+            $onboard->save();
+            $url=config('keys.mahagram.baseurl')."AEPS/APIBCRegistration";
             $response=curl($url,"POST",json_encode($onBoarding));
 
             //return response()->json(['response'=>true,'message'=>$response,'data'=>$onboard,'test'=>gettype($response)]);
-
-            if($response['data'][0]->Message == "Success" && $response['response']== true){
-                $onboard = new BCOnboarding();
-                $onboard->userId=Auth::user()->id;
-                $onboard->serviceId=1;
-                $onboard->providerid=2;
-                $onboard->requested_data=$onBoarding;
-                $onboard->response_data=$response;
-                $onboard->save();
+//            $response['data'][0]->Message == "Success" &&
+           /* if($response['response']== true){*/
+            $updateOnboard= BCOnboarding::find($onboard->id);
+            $updateOnboard->response_data=$response;
+            $updateOnboard->save();
                 $myServiceUpdate=UserWiseService::where('userId','=',Auth::user()->id)
                     ->where('serviceId','=',1)
                     ->where('isActive','=',true)
@@ -90,15 +93,15 @@ class AepsController extends Controller
                 return response()->json([
                     'response'=>true,
                     'message'=>$response['data'][0]->Message,
-                    'data'=>$onboard]
+                    'data'=>$updateOnboard]
                 );
-            }else{
+           /* }else{
                 return response()->json([
                     'response'=>false,
                     'message'=>$response['data'][0]->Message,
                     ]
                 );
-            }
+            }*/
 
 
         }catch (\Exception $exception){
@@ -108,7 +111,7 @@ class AepsController extends Controller
 
     public function iciciKYCStatusCheck(Request $request){
         try {
-            $url="http://uat.dhansewa.com/AEPS/APIBCStatus";
+            $url=config('keys.mahagram.baseurl')."AEPS/APIBCStatus";
             $myService=UserWiseService::where('userId','=',Auth::user()->id)
                 ->where('serviceId','=',1)
                 ->get();
@@ -158,7 +161,7 @@ class AepsController extends Controller
                     'saltkey'=>config('keys.mahagram.salt'),
                     'secretkey'=>config('keys.mahagram.secret')
                 );
-                $url="http://uat.dhansewa.com/AEPS/BCInitiate";
+                $url=config('keys.mahagram.baseurl')."AEPS/BCInitiate";
                 $curlResponse= curl($url,'POST',json_encode($postData));
                 if($curlResponse['response']){
                     return response()->json(['response'=>true,'message'=>'BC Authenticated successfully.', 'data'=>$curlResponse['data']]);
@@ -234,7 +237,7 @@ class AepsController extends Controller
             $icici= ICICIAEPSTransaction::findOrFail($transactionId);
 
 
-                $url="http://uat.dhansewa.com/Common/CheckAePSTxnStatus";
+                $url=config('keys.mahagram.baseurl')."Common/CheckAePSTxnStatus";
                 $postData=array(
                     'saltkey'=>config('keys.mahagram.salt'),
                     'secretkey'=>config('keys.mahagram.secret'),
@@ -268,7 +271,18 @@ class AepsController extends Controller
             return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
         }
     }
-
+    public function walletUpdatedFromICICIAEPS($transactionData, $updateWallet){
+        try {
+            $aepsICICI=ICICIAEPSTransaction::find($transactionData->id);
+            $aepsICICI->isWalletUpdate=true;
+            $aepsICICI->walletReferenceNo=$updateWallet->id;
+            $aepsICICI->save();
+            return $aepsICICI;
+        }catch (\Exception $exception){
+            logger($exception);
+            return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
+        }
+    }
     public function getMyTransactionSummary(Request $request){
         try {
 

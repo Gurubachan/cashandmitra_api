@@ -16,6 +16,7 @@ use App\Http\Controllers\services\AepsController;
 
 use App\Http\Controllers\services\ServiceController;
 use App\Http\Controllers\services\WalletController;
+use App\Http\Controllers\services\WalletSettlementController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -77,7 +78,7 @@ Route::group(["prefix"=>'profile', 'middleware'=>'auth:api'], function (){
 });
 
 Route::group(['prefix'=>'services', 'middleware'=>'auth:api'], function (){
-    Route::get('service',[ServiceController::class,'index']);
+    Route::get('service/{userId}',[ServiceController::class,'index']);
     Route::get('myService',[ServiceController::class,'getUserServices']);
     Route::post('service',[ServiceController::class,'assignService']);
     Route::post('iciciKyc',[AepsController::class,'iciciKyc']);
@@ -98,6 +99,8 @@ Route::group(['prefix'=>'ICICIAeps'], function (){
 Route::group(['prefix'=>'wallet','middleware'=>'auth:api'], function(){
     Route::post('myBalance',[WalletController::class,'checkBalance']);
     Route::post('statement',[WalletController::class,'walletTransaction']);
+    Route::post('initSettlement',[WalletController::class,'initWalletSettlement']);
+    Route::get('bankSettlement',[WalletSettlementController::class,'getLastSettlement']);
 });
 
 Route::get('pinCode/{code}',[PinCodeController::class,'fetch']);

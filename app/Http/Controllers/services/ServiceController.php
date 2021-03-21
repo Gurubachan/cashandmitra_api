@@ -11,17 +11,22 @@ use Illuminate\Support\Facades\Validator;
 
 class ServiceController extends Controller
 {
-    public function index(){
+    public function index($userId){
         try {
-            $service=Service::
-            select('tbl_services.*',
+            $service=Service::select('*')
+                ->where('isActive',1)
+                ->get();
+            /*select('tbl_services.*',
                 'tbl_user_wise_services.isActive',
                 'tbl_user_wise_services.onboarded',
                 'tbl_user_wise_services.onboardStatus',
             )
-            ->leftjoin('tbl_user_wise_services','tbl_user_wise_services.serviceId','=','tbl_services.id')
-            ->get()
-            ;
+                ->where('userId','=',$userId)
+            ->leftjoin('tbl_user_wise_services',
+                'tbl_user_wise_services.serviceId',
+                '=','tbl_services.id')
+
+            ->get();*/
             return response()->json(['response'=>true,'message'=>'Record fetched','data'=>$service],200);
         }catch (\Exception $exception){
             return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);

@@ -158,7 +158,7 @@ class UserController extends Controller
                 $user->fname=$inputs['fname'];
                 $user->mname=isset($inputs['mname'])?$inputs['mname']:null;
                 $user->lname=$inputs['lname'];
-                $user->email=$inputs['email'];
+                //$user->email=$inputs['email'];
                 //$user->contact=$inputs['contact'];
                 $user->dob=date("Y-m-d", strtotime($inputs['dob']));
                 $user->gender=$inputs['gender'];
