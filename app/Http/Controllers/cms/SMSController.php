@@ -125,4 +125,32 @@ class SMSController extends Controller
                 ],500);
         }
     }
+
+    public function sendSMS($contact, $message){
+        try {
+            if(isset($contact) &&
+                is_numeric($contact) &&
+                isset($message) &&
+                is_string($message)
+            ){
+                $api_key = config('keys.sms.apikey');
+                $contacts = $contact;
+                $from = 'CASHND';
+
+                $sms_text = urlencode($message);
+                $postData="key=".$api_key."&campaign=8150&routeid=7&type=text&contacts=".$contacts."&senderid=".$from."&msg=".$sms_text;
+
+                $response=curl(config('keys.sms.url'),"POST",$postData);
+                return $response;
+            } else{
+                return ['response'=>false,'message'=>'Invalid contact or message'];
+            }
+        }catch (\Exception $exception){
+            return response()->json(
+                [
+                    'response'=>false,
+                    'message'=>$exception->getMessage()
+                ],500);
+        }
+    }
 }

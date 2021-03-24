@@ -118,9 +118,14 @@ class AuthController extends Controller
             $user=User::create($inputs);
             $accessToken=$user->createToken('authToken')->accessToken;
 
-
-
             $data=array('user'=>$user,'token'=>$accessToken);
+            $sms= new SMSController();
+            $message="Dear $user->fname,
+Welcome to CASHAND family, your userid is $user->contact.
+Login using your id and password and start transaction today.
+care: 8093454700/01
+mail: customercare@cashand.in ";
+            $sms->sendSMS($inputs['contact'],$message);
             $returnData=array('response'=>true,
                 'message'=>'User Created Successfully.',
                 'data'=>$data );

@@ -23,5 +23,9 @@ return [
         'secret'=>'ebcfbc0a2d6d5ac1e67d9406a32c86d51e4ad5ce',
         'account'=>'36361408932',
         'url'=>'https://v2-api.bankopen.co/v1/'
+    ],
+    'sms'=>[
+        'url'=>"http://sms.thinksimple.co.in/app/smsapi/index.php",
+        'apikey'=>'45D2FE503A9FF9'
     ]
 ];
