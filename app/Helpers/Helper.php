@@ -23,6 +23,7 @@ function curl( $url, $method,$postData, $authToken=null){
         $response = curl_exec($curl);
         $responseInfo = curl_getinfo($curl);
         $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
+        logger($response);
         curl_close($curl);
         if($httpCode === 200){
             return ['response'=>true,'message'=>$responseInfo,'data'=>json_decode($response)];
@@ -31,6 +32,7 @@ function curl( $url, $method,$postData, $authToken=null){
         }
 
     }catch (Exception $exception){
+        logger($exception);
         return ['response'=>false,'message'=>$exception->getMessage()];
     }
 

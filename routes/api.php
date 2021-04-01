@@ -101,8 +101,10 @@ Route::group(['prefix'=>'wallet','middleware'=>'auth:api'], function(){
     Route::post('statement',[WalletController::class,'walletTransaction']);
     Route::post('initSettlement',[WalletController::class,'initWalletSettlement']);
     Route::get('bankSettlement',[WalletSettlementController::class,'getLastSettlement']);
-});
+    Route::post('getPayout',[WalletController::class,'getPayout']);
 
+});
+Route::get('adminWallet',[WalletController::class,'adminWallet']);
 Route::get('pinCode/{code}',[PinCodeController::class,'fetch']);
 Route::get('type',[BusinessTypeController::class,"index"]);
 Route::post('type',[BusinessTypeController::class,"store"]);

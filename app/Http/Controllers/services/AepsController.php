@@ -186,7 +186,12 @@ class AepsController extends Controller
                 $input=json_decode($request->getContent(), true);
             }
             $icici = new ICICIAEPSTransaction();
-            $icici->serviceId=1;
+            if($input['Txntype']=="AP"){
+                $icici->serviceId=14;
+            }else{
+                $icici->serviceId=1;
+            }
+
             $icici->txnType=$input['Txntype'];
             $icici->txnTime=date("Y-m-d H:i:s", strtotime($input['Timestamp']));
             $icici->bcId=$input['BcId'];
@@ -265,8 +270,6 @@ class AepsController extends Controller
                 }else{
                     return response()->json($result);
                 }
-
-
         }catch (\Exception $exception){
             return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
         }
@@ -295,6 +298,7 @@ class AepsController extends Controller
         try {
             $aeps= ICICIAEPSTransaction::where('userId','=', Auth::user()->id)
                 ->where(DB::raw('date(`created_at`)'), date("Y-m-d"))
+                ->orderby('id','desc')
                 ->get();
             if(count($aeps)>0){
                 return response()->json(['response'=>true,'message'=>'Record fetched','data'=>$aeps]);

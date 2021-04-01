@@ -26,5 +26,5 @@ class WalletSettelment extends Model
 
     protected $table="tbl_wallet_settlement";
 
-    protected $casts=['response'=>'array'];
+    protected $casts=['response'=>'array', 'update_response'=>'array'];
 }
