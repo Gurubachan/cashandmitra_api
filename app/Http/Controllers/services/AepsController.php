@@ -35,6 +35,8 @@ class AepsController extends Controller
             /*
              * Prepare file for BC on boarding
              */
+            $aadhaarImage=explode(',' , $inputs['aadhaarimage']);
+            $panImage=explode(',' , $inputs['panimage']);
             $onBoarding=array(
                 'bc_f_name'=>$user['data'][0]['fname'],
                 'bc_m_name'=>($user['data'][0]['mname']!=null)?$user['data'][0]['mname']:"",
@@ -54,8 +56,8 @@ class AepsController extends Controller
                 'bc_pan'=>$user['data'][0]['panNo'],
                 'bc_pincode'=>$user['data'][0]['PinCode'],
                 'shopname'=>$inputs['shopName'],
-                "kyc1"=>$inputs['aadhaarimage'],
-                "kyc2"=>$inputs['panimage'],
+                "kyc1"=>$aadhaarImage[1],
+                "kyc2"=>$panImage[1],
                 "kyc3"=>"",
                 "kyc4"=>"",
                 'saltkey'=>config('keys.mahagram.salt'),
@@ -79,7 +81,7 @@ class AepsController extends Controller
 //            $response['data'][0]->Message == "Success" &&
            /* if($response['response']== true){*/
             $updateOnboard= BCOnboarding::find($onboard->id);
-            $updateOnboard->response_data=$response;
+            $updateOnboard->response_data=$response['data'];
             $updateOnboard->save();
                 $myServiceUpdate=UserWiseService::where('userId','=',Auth::user()->id)
                     ->where('serviceId','=',1)
@@ -105,7 +107,7 @@ class AepsController extends Controller
 
 
         }catch (\Exception $exception){
-            return response()->json(['response'=>false,'message'=>$exception->getMessage()]);
+            return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
         }
     }
 
@@ -140,10 +142,10 @@ class AepsController extends Controller
     public function initTransaction(Request $request){
         try {
             $input=json_decode($request->getContent(), true);
-            $validation=Validator::make($input,['myIp'=>'required|ip']);
+            /*$validation=Validator::make($input,['myIp'=>'required|ip']);
             if($validation->fails()){
                 return response()->json(['response'=>false,'message'=>$validation->errors()],400);
-            }
+            }*/
             $bcData=UserWiseService::select('onBoardReferance')
                 ->where('userId','=', Auth::user()->id)
                 ->where('serviceId','=',1)
@@ -156,7 +158,8 @@ class AepsController extends Controller
                 $postData= array(
                     'bc_id'=>$bcData[0]->onBoardReferance,
                     'phone1'=>Auth::user()->contact,
-                    'ip'=>$input['myIp'],
+                    //'ip'=>$input['myIp'],
+                    'ip'=>request()->ip(),
                     'userid'=>Auth::user()->id,
                     'saltkey'=>config('keys.mahagram.salt'),
                     'secretkey'=>config('keys.mahagram.secret')
@@ -296,14 +299,33 @@ class AepsController extends Controller
 
     public function myAepsTransaction(Request $request){
         try {
-            $aeps= ICICIAEPSTransaction::where('userId','=', Auth::user()->id)
-                ->where(DB::raw('date(`created_at`)'), date("Y-m-d"))
+            $input=json_decode($request->getContent(),true);
+            $startDate=date("Y-m-d",strtotime($input['startDate']));
+            $endDate=date("Y-m-d",strtotime($input['endDate']));
+            if(in_array(Auth::user()->role,config('constants.admin'))){
+                $query= ICICIAEPSTransaction::select('*');
+            }else{
+                $query= ICICIAEPSTransaction::where('userId','=', Auth::user()->id);
+            }
+
+                if(isset($input['type']) && isset($input['status'])){
+                    if($input['type']!="all"){
+                        $query->where('txnType',$input['type']);
+                    }
+                    if($input['status']!="all"){
+                        $query->where('status',$input['status']);
+                    }
+                }
+            $aeps=$query
+                ->whereBetween(DB::raw('date(`created_at`)'), [$startDate, $endDate])
                 ->orderby('id','desc')
-                ->get();
+                ->simplePaginate()
+            ;
+            //return response()->json(['response'=>true,'message'=>'Record fetched','data'=>$data]);
             if(count($aeps)>0){
                 return response()->json(['response'=>true,'message'=>'Record fetched','data'=>$aeps]);
             }else{
-                return response()->json(['response'=>false,'message'=>'No record fetched'],404);
+                return response()->json(['response'=>false,'message'=>'No transaction found.'],404);
             }
         }catch (\Exception $exception){
             return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);

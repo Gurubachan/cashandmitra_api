@@ -138,9 +138,9 @@ class SMSController extends Controller
                 $from = 'CASHND';
 
                 $sms_text = urlencode($message);
-                $postData="key=".$api_key."&campaign=8150&routeid=7&type=text&contacts=".$contacts."&senderid=".$from."&msg=".$sms_text;
-
-                $response=curl(config('keys.sms.url'),"POST",$postData);
+                $postData="?key=".$api_key."&campaign=8150&routeid=7&type=text&contacts=".$contacts."&senderid=".$from."&msg=".$sms_text;
+                $api_url=config('keys.sms.url').$postData;
+                $response=file_get_contents($api_url);
                 return $response;
             } else{
                 return ['response'=>false,'message'=>'Invalid contact or message'];

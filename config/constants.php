@@ -29,5 +29,8 @@ return [
         5=>'Negotiation',
         6=>'Converted',
         7=>'Rejected'
+    ],
+    'admin'=>[
+        9,10,11,12
     ]
 ];

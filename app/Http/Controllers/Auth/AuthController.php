@@ -112,6 +112,7 @@ class AuthController extends Controller
                      'data'=>['user'=>$inputs,'token'=>'']);
                 return response()->json($returnData);
             }
+            $rawPassword=$inputs['password'];
             $inputs['password']=Hash::make($inputs['password']);
             $inputs['loginAllowed']=1;
             $inputs['isActive']=true;
@@ -121,11 +122,11 @@ class AuthController extends Controller
             $data=array('user'=>$user,'token'=>$accessToken);
             $sms= new SMSController();
             $message="Dear $user->fname,
-Welcome to CASHAND family, your userid is $user->contact.
-Login using your id and password and start transaction today.
-care: 8093454700/01
-mail: customercare@cashand.in ";
-            $sms->sendSMS($inputs['contact'],$message);
+Welcome to CASHAND family, your user id is $user->contact and password is $rawPassword.
+website : https://mitra.cashand.in.
+care: 8093454700/01";
+           $smsResponse= $sms->sendSMS($inputs['contact'],$message);
+           logger($smsResponse);
             $returnData=array('response'=>true,
                 'message'=>'User Created Successfully.',
                 'data'=>$data );

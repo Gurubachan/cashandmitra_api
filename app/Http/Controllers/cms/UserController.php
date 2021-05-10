@@ -86,8 +86,6 @@ class UserController extends Controller
             ];
             $input= json_decode($request->getContent(),true);
 
-
-
             $user = User::select('users.*',
                 DB::raw("CONCAT(usergroup.groupName, '_',user_types.types) as userRole"),
                 'usergroup.id as userGroup',

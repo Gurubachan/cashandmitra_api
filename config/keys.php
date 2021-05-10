@@ -21,7 +21,7 @@ return [
     'openBank'=>[
         'apikey'=>'6a74b770-86e2-11eb-953d-71a513c9c445',
         'secret'=>'ebcfbc0a2d6d5ac1e67d9406a32c86d51e4ad5ce',
-        'account'=>'36361408932',
+        'account'=>"36361408932",
         'url'=>'https://v2-api.bankopen.co/v1/'
     ],
     'sms'=>[

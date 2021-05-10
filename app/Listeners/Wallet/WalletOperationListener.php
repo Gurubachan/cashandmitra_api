@@ -27,6 +27,7 @@ class WalletOperationListener
      */
     public function handle($event)
     {
+        logger($event->ICICIAEPSTransaction);
         $transaction=$event->ICICIAEPSTransaction;
         $wallet=new WalletController();
         $walletResult=$wallet->walletOperationaeps($transaction);

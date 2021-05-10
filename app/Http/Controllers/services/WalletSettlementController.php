@@ -48,7 +48,7 @@ class WalletSettlementController extends Controller
             $settle->user_id=$data['user_id'];
             $settle->service_id=$data['service_id'];
             $settle->txnType=$data['txnType'];/*Bank settlement*/
-            $settle->txnTime=now();
+            $settle->txnTime=date("y-m-d H:i:s");
             $settle->amount=$data['amount'];
             $settle->bankName=$data['bankname'];
             $settle->ifsc=$data['ifsc'];
@@ -67,12 +67,14 @@ class WalletSettlementController extends Controller
     public function update(int $id,array $data){
         try {
             $validator=Validator::make($data,[
-                'txnId'=>'required|string',
+                'txnId'=>'required',
                 'response'=>'required',
                 'response_at'=>'required|date',
                 'remark'=>'required|string',
                 'description'=>'required|string',
-                'status'=>'required|string'
+                'status'=>'required|string',
+                'bank_error_message'=>'nullable|string',
+                'bank_transaction_ref_id'=>'nullable|integer'
             ]);
             if($validator->fails()){
                 return ['response'=>false,'message'=>$validator->errors()];
@@ -84,6 +86,8 @@ class WalletSettlementController extends Controller
             $updateSettlement->remark=$data['remark'];
             $updateSettlement->description=$data['description'];
             $updateSettlement->status=$data['status'];
+            $updateSettlement->bank_error_message=$data['bank_error_message'];
+            $updateSettlement->bank_transaction_ref_id=$data['bank_transaction_ref_id'];
             $updateSettlement->save();
             return ['response'=>true,'message'=>'Updated successfully','data'=>$updateSettlement];
         }catch (\Exception $exception){

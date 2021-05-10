@@ -76,15 +76,5 @@ Route::get('/time', function (){
     return date('Y-m-d H:i:s');
 });
 Route::get('/test', function (){
-    $time= strtotime("2021-01-22 21:30:00");
-    $ctime=strtotime("2021-01-22 22:00:00");
-    $amount=6667;
-    $commission=0.40;
-    $calculationRound=bcdiv($amount*$commission/100,1,2);
-    $calculation=$amount*$commission/100;
-    return $data=[
-        'amount'=>$amount,
-        'calc'=>$calculation,
-        'calc1'=>$calculationRound
-        ];
+    return request()->ip();
 });
