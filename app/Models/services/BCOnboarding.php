@@ -17,4 +17,5 @@ class BCOnboarding extends Model
     use HasFactory;
     protected $table="tbl_bconboarding";
     protected $casts=['requested_data'=>'array','response_data'=>'array'];
+    protected $hidden=['requested_data'];
 }

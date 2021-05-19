@@ -43,15 +43,18 @@ class WalletController extends Controller
     {
         try {
             $input = json_decode($request->getContent(), true);
+            $transaction = Wallet::select('user_wallet.*','users.fname',
+                'users.mname','users.lname','users.contact','users.role')
+                ->join('users','user_wallet.user_id','=','users.id')
+                ->orderBy('id', 'DESC');
             if(in_array(Auth::user()->role,config('constants.admin'))){
-                $transaction = Wallet::orderBy('id', 'DESC')
+                $data=$transaction
                     ->paginate();
             }else{
-                $transaction =Wallet::where('user_id', Auth::user()->id)
-                ->orderBy('id', 'DESC')
+                $data=$transaction->where('user_id', Auth::user()->id)
                     ->simplePaginate();
             }
-            return response()->json(['response' => true, 'message' => 'Record fetched', 'data' => $transaction]);
+            return response()->json(['response' => true, 'message' => 'Record fetched', 'data' => $data]);
         } catch (\Exception $exception) {
             return response()->json(['response' => false, 'message' => $exception->getMessage()], 500);
         }
@@ -388,7 +391,7 @@ class WalletController extends Controller
         }
     }
 
-    public function adminWallet()
+    public function userWiseBalance()
     {
         try {
             $query = "select u.id, u.fname, u.lname,
@@ -396,9 +399,37 @@ class WalletController extends Controller
        order by uw.id desc limit 1) as balance from users u where u.role=4
 having balance is not null";
 
-            return $data = DB::select($query);
+             $data = DB::select($query);
+
+             return response()->json(['response'=>true,'message'=>'Balance fetched','data'=>$data]);
         } catch (\Exception $exception) {
             return response()->json(['response' => false, 'message' => $exception->getMessage()], 500);
+        }
+    }
+
+    public function walletBalance(){
+        try {
+            $query="select sum((select uw.closing_balance
+       from user_wallet uw
+       where uw.user_id = u.id
+       order by uw.id desc
+       limit 1)) as balance
+from users u where u.role=4 having balance is not null";
+            $data = DB::select($query);
+            return response()->json(['response'=>true,'message'=>'Balance Fetched','data'=>$data]);
+        }catch (\Exception $exception){
+            return response()->json(['response'=>false, 'message'=>$exception->getMessage()],500);
+        }
+    }
+
+    public function todayBusiness(){
+        try {
+            $query="select sum(transacting_amount) as amount from user_wallet
+where date(created_at)='". date('Y-m-d') ."' and status='success' and wallet_operation='cr'";
+            $data=DB::select($query);
+                return response()->json(['response'=>true,'message'=>'Balance Fetched','data'=>$data]);
+        }catch (\Exception $exception){
+            return response()->json(['response'=>false, 'message'=>$exception->getMessage()],500);
         }
     }
 

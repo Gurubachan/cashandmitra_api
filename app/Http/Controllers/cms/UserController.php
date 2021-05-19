@@ -301,4 +301,40 @@ class UserController extends Controller
             return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
         }
     }
+
+    public function referral(Request $request){
+        try {
+            $input=json_decode($request->getContent(),true);
+            $validator=Validator::make($input,
+                [
+                    'referral'=>'required|integer|digits:10'
+                ]);
+            if($validator->fails()){
+                return response()->json(['response'=>false,'message'=>$validator->errors()],400);
+            }
+            $data=User::select('id','role')
+            ->where('contact',$input['referral'])
+                ->get();
+            if(count($data)==1){
+                $myData=User::find(Auth::user()->id);
+                if($data[0]->role==4 && Auth::user()->id > $data[0]->id){
+                    $myData->parentId=$data[0]->id;
+                    $myData->save();
+
+                    $parentData=User::find($data[0]->id);
+                    $parentData->isIllegibleForReferral=false;
+                    $parentData->save();
+                    return response()->json(['response'=>true,'message'=>'Referral Success Fully mapped','data'=>$myData]);
+                }else{
+                    return response()->json(['response'=>false,
+                        'message'=>'Invalid user referral.']);
+                }
+            }else{
+                return response()->json(['response'=>false,'message'=>'Unable to find any valid user data in this referral number'],404);
+            }
+
+        }catch (\Exception $exception){
+            return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
+        }
+    }
 }

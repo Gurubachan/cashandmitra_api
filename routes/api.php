@@ -48,6 +48,7 @@ Route::group(['prefix'=>'user', 'middleware'=>'auth:api'], function () {
     Route::get('group',[UserController::class,'getUserGroup']);
     Route::post('type',[UserController::class,'getUserType']);
     Route::post('update',[UserController::class,'update']);
+    Route::post('referral',[UserController::class,'referral']);
 });
 Route::group(['middleware'=>'auth:api'], function (){
     Route::get('user',[AuthController::class,'getUser'])->name('user');
@@ -85,6 +86,7 @@ Route::group(['prefix'=>'services', 'middleware'=>'auth:api'], function (){
     Route::post('checkKyc',[AepsController::class,'iciciKYCStatusCheck']);
     Route::post('initTransaction',[AepsController::class,'initTransaction']);
     Route::post('transaction',[AepsController::class,'myAepsTransaction']);
+    Route::get('onboarded',[AepsController::class,'getBCOnboarded']);
 
 
 });
@@ -107,7 +109,9 @@ Route::group(['prefix'=>'wallet','middleware'=>'auth:api'], function(){
 });
 
 Route::group(['prefix'=>'admin','middleware'=>['admin','auth:api']], function (){
-    Route::get('wallet',[WalletController::class,'adminWallet']);
+    Route::get('wallet',[WalletController::class,'walletBalance']);
+    Route::get('userWallet',[WalletController::class,'userWiseBalance']);
+    Route::get('todayBusiness',[WalletController::class,'todayBusiness']);
 });
 
 

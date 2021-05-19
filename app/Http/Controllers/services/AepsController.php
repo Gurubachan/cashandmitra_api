@@ -124,10 +124,11 @@ class AepsController extends Controller
                 );
 
             $response=curl($url,'POST',json_encode($postData));
+            logger($response);
             if($response['response']){
                 $updateResponse=UserWiseService::find($myService[0]->id);
-                $updateResponse->remark=$response[0]->remarks;
-                $updateResponse->onboardStatus=strtolower($response[0]->status);
+                $updateResponse->remark=$response['data'][0]->remarks;
+                $updateResponse->onboardStatus=strtolower($response['data'][0]->status);
                 $updateResponse->save();
                 return response()->json(['response'=>true,'message'=>$response]);
             }else{
@@ -135,10 +136,22 @@ class AepsController extends Controller
             }
 
         }catch (\Exception $exception){
+            return response()->json(['response'=>false,'message'=>$exception->getMessage(),'linenumber'=>$exception->getLine()],500);
+        }
+    }
+    public function getBCOnboarded(){
+        try {
+            $data=BCOnboarding::select('tbl_bconboarding.*',
+                'users.fname','users.lname','users.contact')
+                ->join('users','users.id','=','tbl_bconboarding.userId')
+            ->orderby('id','DESC')
+            ->simplePaginate()
+            ;
+            return response()->json(['response'=>true,'message'=>'Record fetched','data'=>$data]);
+        }catch (\Exception $exception){
             return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
         }
     }
-
     public function initTransaction(Request $request){
         try {
             $input=json_decode($request->getContent(), true);
