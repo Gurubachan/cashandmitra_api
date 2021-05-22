@@ -42,12 +42,18 @@ class PinCodeController extends Controller
 
     public function getState(){
         try {
-            $ch=curl_init();
+            /*$ch=curl_init();
             curl_setopt($ch,CURLOPT_URL, "http://uat.dhansewa.com/Common/GetState");
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
             $response = curl_exec($ch);
-            curl_close($ch);
-            return $response;
+            curl_close($ch);*/
+
+            $url=config('keys.mahagram.baseurl').'Common/GetState';
+            $response=curl($url,'GET',null);
+            if($response['response']){
+                return $response['data'];
+            }
+
         }catch (\Exception $exception) {
             return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
         }
@@ -62,9 +68,10 @@ class PinCodeController extends Controller
                 return response()->json(['response'=>false,'message'=>$validator->errors()],400);
             }
             $postdata=array('stateid'=>$inputs['stateid']);
-            $curl = curl_init();
-
-            curl_setopt_array($curl, array(
+            //$curl = curl_init();
+            $url=config('keys.mahagram.baseurl').'Common/GetDistrictByState';
+            $response=curl($url,'POST',json_encode($postdata));
+            /*curl_setopt_array($curl, array(
                 CURLOPT_URL => 'http://uat.dhansewa.com/Common/GetDistrictByState',
                 CURLOPT_RETURNTRANSFER => true,
                 CURLOPT_ENCODING => '',
@@ -81,8 +88,11 @@ class PinCodeController extends Controller
 
             $response = curl_exec($curl);
 
-            curl_close($curl);
-            return $response;
+            curl_close($curl);*/
+            if($response['response']){
+                return $response['data'];
+            }
+
         }catch (\Exception $exception){
             return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
         }

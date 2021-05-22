@@ -124,7 +124,7 @@ class AepsController extends Controller
                 );
 
             $response=curl($url,'POST',json_encode($postData));
-            logger($response);
+            //logger($response);
             if($response['response']){
                 $updateResponse=UserWiseService::find($myService[0]->id);
                 $updateResponse->remark=$response['data'][0]->remarks;

@@ -159,6 +159,7 @@ class CallingController extends Controller
                 $callingUpdate->leadId = $input['leadId'];
                 $callingUpdate->assignTo = Auth::user()->id;
                 $callingUpdate->assignBy = Auth::user()->id;
+                $callingUpdate->callingOn = date("Y-m-d");
             }
             if($validator->fails()){
                 return response()->json(['response'=>false,'message'=>$validator->errors()],400);

@@ -122,3 +122,8 @@ Route::get('state',[PinCodeController::class,'getState']);
 Route::post('district',[PinCodeController::class,'getDistrict']);
 Route::get('callStatus',[PinCodeController::class,'getCallStatus']);
 Route::post('getBank',[IFSCController::class,'getBankDetails']);
+
+
+/*RBP FINIVIS*/
+Route::get('rbpAuth',[IFSCController::class,'getAuthorisation']);
+Route::get('bank',[IFSCController::class,'getBankIIN']);

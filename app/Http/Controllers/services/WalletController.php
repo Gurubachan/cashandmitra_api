@@ -362,7 +362,8 @@ class WalletController extends Controller
             $url = config('keys.openBank.url') . "payouts/" . $input['merchant_ref_id'];
             //logger($url);
             $token = "Bearer " . config('keys.openBank.apikey') . ":" . config('keys.openBank.secret');
-            $response = curl($url, "GET", null, $token);
+            $header=array('Authorization:'.$token);
+            $response = curl($url, "GET", null, $header);
             if ($response['response']) {
                 $data = $response['data']->data;
                 $walletSettlement = WalletSettelment::find($input['merchant_ref_id']);
@@ -483,7 +484,8 @@ where date(created_at)='". date('Y-m-d') ."' and status='success' and wallet_ope
                             );
                             $url = $url = config('keys.openBank.url') . "bank_account/verify";
                             $token = "Bearer " . config('keys.openBank.apikey') . ":" . config('keys.openBank.secret');
-                            $response = curl($url, "POST", json_encode($accountVerificationData), $token);
+                            $header=array('Authorization:'.$token);
+                            $response = curl($url, "POST", json_encode($accountVerificationData), $header);
                             logger($response);
                             if ($response['response']) {
                                 $verificationData = $response['data']['data'][0];

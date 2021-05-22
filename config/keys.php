@@ -27,5 +27,11 @@ return [
     'sms'=>[
         'url'=>"http://sms.thinksimple.co.in/app/smsapi/index.php",
         'apikey'=>'45D2FE503A9FF9'
+    ],
+    'rbpfinivis'=>[
+        'secretKey'=> 1234,
+        'saltKey'=> 456,
+        'encryptdecryptKey'=> 'abcd',
+        'url'=>'https://sandbox.rbpfinivis.com/api/'
     ]
 ];

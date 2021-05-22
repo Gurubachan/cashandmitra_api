@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property mixed leadId
  * @property mixed assignTo
  * @property mixed assignBy
+ * @property false|mixed|string callingOn
  */
 class LeadCalling extends Model
 {
