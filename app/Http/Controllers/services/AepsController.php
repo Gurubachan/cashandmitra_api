@@ -320,30 +320,30 @@ class AepsController extends Controller
             $input=json_decode($request->getContent(),true);
             $startDate=date("Y-m-d",strtotime($input['startDate']));
             $endDate=date("Y-m-d",strtotime($input['endDate']));
-            if(in_array(Auth::user()->role,config('constants.admin'))){
-                $query= ICICIAEPSTransaction::select('*');
-            }else{
-                $query= ICICIAEPSTransaction::where('userId','=', Auth::user()->id);
+            $query= ICICIAEPSTransaction::select('tbl_icici_aeps_transaction.*','users.fname','users.lname')
+                ->join('users','tbl_icici_aeps_transaction.userId','=','users.id');
+            if(!in_array(Auth::user()->role,config('constants.admin'))){
+               $query->where('tbl_icici_aeps_transaction.userId','=', Auth::user()->id);
             }
 
                 if(isset($input['type']) && isset($input['status'])){
                     if($input['type']!="all"){
-                        $query->where('txnType',$input['type']);
+                        $query->where('tbl_icici_aeps_transaction.txnType',$input['type']);
                     }
                     if($input['status']!="all"){
-                        $query->where('status',$input['status']);
+                        $query->where('tbl_icici_aeps_transaction.status',$input['status']);
                     }
                 }
             $aeps=$query
-                ->whereBetween(DB::raw('date(`created_at`)'), [$startDate, $endDate])
-                ->orderby('id','desc')
+                ->whereBetween(DB::raw('date(tbl_icici_aeps_transaction.txnTime)'), [$startDate, $endDate])
+                ->orderby('tbl_icici_aeps_transaction.id','desc')
                 ->simplePaginate()
             ;
             //return response()->json(['response'=>true,'message'=>'Record fetched','data'=>$data]);
             if(count($aeps)>0){
                 return response()->json(['response'=>true,'message'=>'Record fetched','data'=>$aeps]);
             }else{
-                return response()->json(['response'=>false,'message'=>'No transaction found.'],404);
+                return response()->json(['response'=>false,'message'=>'No transaction found.','query'=>$query->toSql()],404);
             }
         }catch (\Exception $exception){
             return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
