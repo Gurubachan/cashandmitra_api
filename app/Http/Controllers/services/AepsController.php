@@ -267,12 +267,16 @@ class AepsController extends Controller
                 );
                 $result=curl($url,'POST',json_encode($postData));
                 //return $result['data']->statuscode;
+            logger("Check aeps transaction status",$result);
                 if($result['data']->statuscode == "000" ){
 
                     $data=$result['data']->Data[0];
+                    $icici->status=$data->status;
                     $icici->bankName=$data->bankname;
                     $icici->bank_response_message=$data->bankresponsemessage;
-                    $icici->bank_code=$data->bankcode;
+                    if(isset($data->bankcode) && $data->bankcode!=""){
+                        $icici->bank_code=$data->bankcode;
+                    }
                     $icici->bank_message=$data->bankmessage;
                     $icici->txn_from=$data->txnfrom;
                     $icici->routeType=$data->routetype;
