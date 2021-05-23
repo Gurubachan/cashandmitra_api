@@ -239,6 +239,7 @@ class AepsController extends Controller
             }else{
                 $input=json_decode($request->getContent(), true);
             }
+            logger("AEPS Update Response",$input);
             $icici = ICICIAEPSTransaction::find($input['TransactionId']);
             $icici->status=$input['Status'];
             $icici->rrn=$input['rrn'];
