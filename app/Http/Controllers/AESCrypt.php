@@ -7,7 +7,7 @@ namespace App\Http\Controllers;
 class AESCrypt
 {
     private $key;
-    private $iv ="&yUPvjTSCgXwsJV9";
+    private $iv;
     private $digest = "md5";
     private $method = "aes-128-cbc";
 
