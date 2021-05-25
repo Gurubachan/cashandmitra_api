@@ -49,33 +49,5 @@ class IFSCController extends Controller
         }
 
     }
-    /*Get bank list*/
-    public function getBankIIN(Request $request){
-        try {
-           $authResponse=$this->getAuthorisation();
-            $url=config('keys.rbpfinivis.url').'Signature/authorize';
-            if($authResponse['response'] && $authResponse['data']->isSuccess){}
-            $header=array('Authorization: Bearer '. $authResponse['data']->data->token);
-           $response=curl($url,'GET',null,$header);
-           return $response;
-        }catch (\Exception $exception){
-            return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
-        }
-    }
 
-    /*Get auth key*/
-    public function getAuthorisation(){
-        try {
-            $url=config('keys.rbpfinivis.url').'Signature/authorize';
-            $secretKey="secretKey:1234";
-            $saltKey="saltKey:456";
-            $encryptdecryptKey="encryptdecryptKey:abcd";
-            $otherData=array($secretKey,$saltKey,$encryptdecryptKey);
-            $response=curl($url,'POST',null,$otherData);
-            //logger($response);
-            return $response;
-        }catch (\Exception $exception){
-            return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
-        }
-    }
 }

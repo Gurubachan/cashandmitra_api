@@ -275,7 +275,8 @@ class WalletController extends Controller
                                 //logger($payout_data);
                                 $url = config('keys.openBank.url') . "payouts";
                                 $token = "Bearer " . config('keys.openBank.apikey') . ":" . config('keys.openBank.secret');
-                                $response = curl($url, "POST", json_encode($payout_data), $token);
+                                $header=array('Authorization:'.$token);
+                                $response = curl($url, "POST", json_encode($payout_data), $header);
                                 logger("Payout response from bank:", $response);
                                 if ($response['response']) {
                                     $data = $response['data'];

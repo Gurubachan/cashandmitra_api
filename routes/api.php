@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\bank\IFSCController;
 use App\Http\Controllers\cms\BusinessTypeController;
 
+use App\Http\Controllers\cms\CommonController;
 use App\Http\Controllers\cms\EmailController;
 use App\Http\Controllers\cms\LeadController;
 use App\Http\Controllers\cms\CallingController;
@@ -14,6 +15,7 @@ use App\Http\Controllers\cms\TaskController;
 use App\Http\Controllers\cms\UserController;
 use App\Http\Controllers\services\AepsController;
 
+use App\Http\Controllers\services\RBPController;
 use App\Http\Controllers\services\ServiceController;
 use App\Http\Controllers\services\WalletController;
 use App\Http\Controllers\services\WalletSettlementController;
@@ -125,5 +127,14 @@ Route::post('getBank',[IFSCController::class,'getBankDetails']);
 
 
 /*RBP FINIVIS*/
-Route::get('rbpAuth',[IFSCController::class,'getAuthorisation']);
-Route::get('bank',[IFSCController::class,'getBankIIN']);
+Route::group(['prefix'=>'rbp','middleware'=>'auth:api'],function (){
+    Route::get('rbpAuth',[RBPController::class,'authorisation']);
+    Route::get('bank',[RBPController::class,'bankIIN']);
+    Route::get('state',[RBPController::class,'state']);
+    Route::post('district',[RBPController::class,'district']);
+    Route::post('merchantRegistration',[RBPController::class,'registration']);
+    Route::post('merchantStatus',[RBPController::class,'status']);
+    Route::post('customer',[RBPController::class,'customer_registration']);
+    Route::post('aepsTransaction',[RBPController::class,'transaction']);
+});
+
