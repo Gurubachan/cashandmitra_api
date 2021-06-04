@@ -16,7 +16,7 @@ return [
         'apikey'=>'oho0nIGd1EkjOzp8XQdM0FCAaFJRidJ5',
         'password'=>'h7LuuZBLsap7v2R8Q4YpQKq8Bnq',
         'username'=>'evable',
-        'baseurl'=>'https://apiportal.pichainlabs.com/v1/'
+        'baseurl'=>'https://api.pichainlabs.com/v1/'
     ],
     'openBank'=>[
         'apikey'=>'6a74b770-86e2-11eb-953d-71a513c9c445',

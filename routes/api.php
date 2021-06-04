@@ -19,6 +19,7 @@ use App\Http\Controllers\services\RBPController;
 use App\Http\Controllers\services\ServiceController;
 use App\Http\Controllers\services\WalletController;
 use App\Http\Controllers\services\WalletSettlementController;
+use App\Http\Controllers\verification\VerifyController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -136,5 +137,12 @@ Route::group(['prefix'=>'rbp','middleware'=>'auth:api'],function (){
     Route::post('merchantStatus',[RBPController::class,'status']);
     Route::post('customer',[RBPController::class,'customer_registration']);
     Route::post('aepsTransaction',[RBPController::class,'transaction']);
+});
+
+/*Pichan Verification*/
+Route::group(['prefix'=>'verify','middleware'=>'auth:api'], function (){
+    Route::post('pan',[VerifyController::class,'verifyPan']);
+    Route::post('aadhaar',[VerifyController::class,'verifyAadhaar']);
+    Route::post('account',[VerifyController::class,'accountVerify']);
 });
 

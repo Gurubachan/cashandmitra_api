@@ -337,4 +337,13 @@ class UserController extends Controller
             return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
         }
     }
+
+    public function testRequest(Request $request){
+        try {
+            logger($request);
+        }catch (\Exception $exception){
+            logger($exception->getMessage());
+        }
+
+    }
 }

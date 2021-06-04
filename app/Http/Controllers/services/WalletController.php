@@ -78,7 +78,7 @@ class WalletController extends Controller
                 } else {
                     $previous_balance = 0.00;
                 }
-                logger($wallet);
+                //logger($wallet);
                 $transaction_type = "Aeps";
                 $description = "ICICI Aeps Cash Withdrawal";
                 $wallet_operation = "cr";
@@ -101,7 +101,7 @@ class WalletController extends Controller
                 );
 
                 $walletStore = $this->store($walletData);
-                logger($walletStore);
+                //logger($walletStore);
                 if ($walletStore['response']) {
                     return $walletStore['data'];
                 } else {
@@ -218,7 +218,7 @@ class WalletController extends Controller
     public function initWalletSettlement(Request $request)
     {
         try {
-            //DB::beginTransaction();
+            DB::beginTransaction();
             $input = json_decode($request->getContent(), true);
 
             $wallet = $this->checkBalance($request);
@@ -315,29 +315,29 @@ class WalletController extends Controller
                                         if ($updateWalletResponse['response']) {
                                             $updateWallet = $updateWalletResponse['data'];
                                             $this->walletCommission($updateWallet, "Bank Settlement", "dr");
-                                            //DB::commit();
+                                            DB::commit();
                                             return response()->json(['response' => true, 'message' => 'Transaction initiated', 'data' => $payout_data]);
                                         } else {
-                                            // DB::rollBack();
+                                             DB::rollBack();
                                             return response()->json(['response' => false, 'message' => 'Unable to process wallet commission']);
                                         }
                                     } else {
-                                        // DB::rollBack();
+                                         DB::rollBack();
                                         return response()->json(['response' => false, 'message' => 'Unable to update settlement']);
                                     }
                                 } else {
                                     /*Initiate Refund operation*/
-                                    //DB::rollback();
+                                    DB::rollback();
                                     return response()->json(['response' => false,
                                         'message' => 'Transaction initiated fail. Try after some time',
                                         "errors" => $response['message']]);
                                 }
                             } else {
-                                //DB::rollBack();
+                                DB::rollBack();
                                 return response()->json(['response' => false, 'message' => 'Unable to process settlement']);
                             }
                         } else {
-                            // DB::rollBack();
+                             DB::rollBack();
                             return response()->json(['response' => false, 'message' => 'Unable to deduct wallet']);
                         }
                     } else {
@@ -350,7 +350,7 @@ class WalletController extends Controller
                 return response()->json(['response' => false, 'message' => 'Bank account not verified']);
             }
         } catch (\Exception $exception) {
-            // DB::rollBack();
+            DB::rollBack();
             logger($exception->getMessage());
             return response()->json(['response' => false, 'message' => $exception->getMessage()], 500);
         }

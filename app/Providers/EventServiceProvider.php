@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Events\ICICI\CheckTransactionStatusEvent;
+use App\Events\Verification\VerifyEvent;
 use App\Listeners\ICICI\CheckTransactionStatusListener;
+use App\Listeners\Verification\VerifyListener;
 use App\Listeners\Wallet\WalletOperationListener;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
@@ -24,6 +26,9 @@ class EventServiceProvider extends ServiceProvider
         CheckTransactionStatusEvent::class=>[
             CheckTransactionStatusListener::class,
             WalletOperationListener::class,
+        ],
+        VerifyEvent::class=>[
+            VerifyListener::class
         ]
     ];
 

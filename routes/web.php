@@ -13,10 +13,40 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
 Route::get('/', function () {
+    return view('home');
+});
+Route::get('/home', function () {
+    return view('home');
+});
+Route::get('/about', function () {
+    return view('about');
+});
+Route::get('/contact', function () {
+    return view('contact');
+});
+Route::get('/terms', function () {
+    return view('terms');
+});
+Route::get('/faq', function () {
+    return view('faq');
+});
+Route::get('/team', function () {
+    return view('team');
+});
+Route::get('/pricing', function () {
+    return view('pricing');
+});
+Route::get('/review', function () {
+    return view('review');
+});
+
+
+/*Route::get('/', function () {
 //    return view('welcome');
     return response('<h1 style="text-align: center">CASHAND Server Running Properly</h1>');
-});
+});*/
 
 //Clear Cache facade value:
 Route::get('/clear-cache', function() {
