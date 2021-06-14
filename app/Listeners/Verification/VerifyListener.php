@@ -3,6 +3,7 @@
 namespace App\Listeners\Verification;
 
 use App\Http\Controllers\cms\UserController;
+use App\Http\PostCaller;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Http\Request;
 use Illuminate\Queue\InteractsWithQueue;
@@ -26,19 +27,20 @@ class VerifyListener implements ShouldQueue
      * @param  object  $event
      * @return void
      */
-    public function handle($event)
-    {
+    public function handle($event)    {
         try {
             $response= curl($event->url,'POST', json_encode($event->postData), $event->header);
-            $request= new Request();
-            $request->setMethod('POST');
-            $request->request->add($response);
-            $user=new UserController();
-            $user->testRequest($request);
+
+            if($response['response']){
+                if(gettype($response['data'])=="object"){
+                    $data=json_decode(json_encode($response['data']), true);
+                    $post= new PostCaller(UserController::class,'testRequest',Request::class,$data);
+                    $post->call();
+                }
+            }
         }catch (\Exception $exception){
             logger($exception->getMessage());
         }
-
-
     }
+
 }

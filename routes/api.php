@@ -134,8 +134,10 @@ Route::group(['prefix'=>'rbp','middleware'=>'auth:api'],function (){
     Route::get('state',[RBPController::class,'state']);
     Route::post('district',[RBPController::class,'district']);
     Route::post('merchantRegistration',[RBPController::class,'registration']);
+    Route::post('resendOtp',[RBPController::class,'otpResend']);
+    Route::post('eKycProcess',[RBPController::class,'eKycProcess']);
     Route::post('merchantStatus',[RBPController::class,'status']);
-    Route::post('customer',[RBPController::class,'customer_registration']);
+    Route::post('customer',[RBPController::class,'getCustomer']);
     Route::post('aepsTransaction',[RBPController::class,'transaction']);
 });
 

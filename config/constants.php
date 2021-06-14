@@ -32,5 +32,10 @@ return [
     ],
     'admin'=>[
         9,10,11,12
+    ],
+    'transactionAeps'=>[
+        'BE'=>"Balance Enquiry",
+        'CW'=>"Cash Withdrawal",
+        'MS'=>"Mini Statement"
     ]
 ];

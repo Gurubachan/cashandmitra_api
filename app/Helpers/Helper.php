@@ -30,7 +30,7 @@ function curl( $url, $method,$postData, $header=array()){
         $responseInfo = curl_getinfo($curl);
         $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
         curl_close($curl);
-        logger($response);
+        //logger($response);
         if($httpCode === 200){
             return ['response'=>true,'message'=>'Success','data'=>json_decode($response)];
         }else{

@@ -340,7 +340,9 @@ class UserController extends Controller
 
     public function testRequest(Request $request){
         try {
-            logger($request);
+
+            $input=$request->all();
+            dd($input);
         }catch (\Exception $exception){
             logger($exception->getMessage());
         }

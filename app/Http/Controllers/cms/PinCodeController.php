@@ -105,4 +105,8 @@ class PinCodeController extends Controller
             return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
         }
     }
+
+    public function getPinCode($pincode){
+        return PinCode::find($pincode);
+    }
 }

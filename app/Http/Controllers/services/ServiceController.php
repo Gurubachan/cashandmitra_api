@@ -16,18 +16,37 @@ class ServiceController extends Controller
             $service=Service::select('*')
                 ->where('isActive',1)
                 ->get();
-            /*select('tbl_services.*',
-                'tbl_user_wise_services.isActive',
-                'tbl_user_wise_services.onboarded',
-                'tbl_user_wise_services.onboardStatus',
-            )
-                ->where('userId','=',$userId)
-            ->leftjoin('tbl_user_wise_services',
-                'tbl_user_wise_services.serviceId',
-                '=','tbl_services.id')
-
-            ->get();*/
-            return response()->json(['response'=>true,'message'=>'Record fetched','data'=>$service],200);
+            $userServices=array();
+            $userWiseService=UserWiseService::where('userId',$userId)->get();
+            if(count($userWiseService)>0){
+                foreach ($service as $s){
+                    $userServices[$s->id]=array(
+                        'serviceId'=>$s->id,
+                        'service'=>$s->service,
+                        'assigned'=>false,
+                        'userId'=>$userId,
+                        'id'=>null
+                    );
+                    foreach ($userWiseService as $us){
+                        if ($s->id == $us->serviceId){
+                            $userServices[$s->id]['assigned']=$us->isActive;
+                            $userServices[$s->id]['id']=$us->id;
+                        }
+                    }
+                }
+            }else{
+                foreach ($service as $s){
+                    $userServices[$s->id]=array(
+                        'serviceId'=>$s->id,
+                        'service'=>$s->service,
+                        'assigned'=>false,
+                        'userId'=>$userId,
+                        'id'=>null
+                    );
+                }
+            }
+            $userServices=base64_encode(json_encode(array_values($userServices)));
+            return response()->json(['response'=>true,'message'=>'Record fetched','data'=>$userServices],200);
         }catch (\Exception $exception){
             return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
         }
@@ -50,13 +69,7 @@ class ServiceController extends Controller
                 ->where('tbl_user_wise_services.userId','=',Auth::user()->id)
                 ->where('tbl_user_wise_services.isActive','=',true)
                 ->get();
-           /* if(isset($request) && is_array($request)){
-                if(isset($request['userId'])){
 
-                }
-            }else{
-                return ['response'=>false,'message'=>'invalid data'];
-            }*/
             if(count($myService)>0){
                 return response()->json(['response'=>true,'message'=>'Service Fetched','data'=>$myService]);
             }else{
@@ -80,44 +93,23 @@ class ServiceController extends Controller
             if($validator->fails()){
                 return response()->json(['response'=>false,'message'=>$validator->errors()],400);
             }
-            /*
-             * Get User services
-             */
-            /*for ($i=0; $i<count($input['services']); $i++){
-                $myService[]=$input['services'][$i]['id'];
-            }
-            $services=UserWiseService::where('userId',$input['userId'])
-                ->whereIn('serviceId',$myService)
-                ->get();
-            $updateServices=array();
-            $insertServices=array();
-            if(count($services)>0){
-                foreach ($services as $us){
-                    for ($i=0; $i<count($input['services']); $i++){
-                        if($us->serviceId == $input['services'][$i]['id']){
-                            $updateServices[]=array(
-                                'isActive'=>$input['services'][$i]['isActive'],
-                                'updated_at'=>now()
-                            );
-                            break;
-                        }else{
-
-                        }
-                    }
-                }
-            }*/
-            $userService=array();
+            $result=array();
             for ($i=0; $i<count($input['services']); $i++){
-                $userService[]=array(
-                    'serviceId'=>$input['services'][$i]['id'],
-                    'isActive'=>$input['services'][$i]['isActive'],
+                $userService=array(
+                    'serviceId'=>$input['services'][$i]['serviceId'],
+                    'isActive'=>$input['services'][$i]['assigned'],
                     'userId'=>$input['userId'],
                     'created_at'=>now()
                 );
+                $result[]=UserWiseService::updateOrCreate(
+                    ['userId'=>$input['userId'],
+                        'serviceId'=>$input['services'][$i]['serviceId'],
+                        'id'=>$input['services'][$i]['id']],
+                    $userService);
             }
-            $result=UserWiseService::insert($userService);
-            if($result){
-                return response()->json(['response'=>true,'message'=>'Service Assigned']);
+
+            if(count($result)>0){
+                return response()->json(['response'=>true,'message'=>'Service Assigned','data'=>base64_encode(json_encode($result))]);
             }else{
                 return response()->json(['response'=>false,'message'=>'Some Error Occurred']);
             }
@@ -152,6 +144,21 @@ class ServiceController extends Controller
             return response()->json(['response'=>true,'message'=>'Service Updated','data'=>$myService]);
         }catch (\Exception $exception){
             return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
+        }
+    }
+
+    public function getuserwiseService($userId, $serviceId=null,$onboarded=false){
+        try {
+            $uws=UserWiseService::where('userId',$userId);
+            if($serviceId!=null){
+                $uws->where('serviceId',$serviceId);
+            }
+            if($onboarded){
+                $uws->where('onboarded',1);
+            }
+            return $data=$uws->get();
+        }catch (\Exception $exception){
+            return response()->json(['response'=>false,'message'=>$exception->getMessage(),'errorLine'=>$exception->getLine()],500);
         }
     }
 }
