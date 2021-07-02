@@ -3,8 +3,10 @@
 namespace App\Providers;
 
 use App\Events\ICICI\CheckTransactionStatusEvent;
+use App\Events\Rbp\TransactionEvent;
 use App\Events\Verification\VerifyEvent;
 use App\Listeners\ICICI\CheckTransactionStatusListener;
+use App\Listeners\Rbp\WalletOperation;
 use App\Listeners\Verification\VerifyListener;
 use App\Listeners\Wallet\WalletOperationListener;
 use Illuminate\Auth\Events\Registered;
@@ -29,6 +31,9 @@ class EventServiceProvider extends ServiceProvider
         ],
         VerifyEvent::class=>[
             VerifyListener::class
+        ],
+        TransactionEvent::class=>[
+            WalletOperation::class
         ]
     ];
 

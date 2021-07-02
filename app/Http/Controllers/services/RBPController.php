@@ -8,22 +8,41 @@ use App\Http\Controllers\AESCrypt;
 use App\Models\cms\AepsCustomers;
 use App\Models\cms\BankList;
 use App\Models\services\BCOnboarding;
+use App\Models\services\RbpAepsTransaction;
 use App\Models\services\UserWiseService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-
+use Jenssegers\Agent\Agent;
 class RBPController extends Controller
 {
     protected $header=array();
     protected $error_message=null;
     protected $base_url=null;
+    protected $clientDetails=[];
     public function __construct(){
         $this->base_url=config('keys.rbpfinivis.url');
         $authResponse=$this->authorisation();
-        if($authResponse['response'] && $authResponse['data']->isSuccess){
-            $this->header=array('Authorization: Bearer '.$authResponse['data']->data->token);
+
+        if($authResponse['response'] ){
+            if($authResponse['data']->isSuccess){
+                $this->header=array('Authorization: Bearer '.$authResponse['data']->data->token);
+            }else{
+                logger("Failed Construct ",$authResponse);
+                return response()->json(['response'=>false,'message'=>"Unable to authenticate with bank"],401);
+            }
+
+        }else{
+            return response()->json(['response'=>false,'message'=>"Unable to authenticate with bank"],401);
         }
+       $agent = new Agent();
+        $this->clientDetails=array(
+            'browser'=>$agent->browser(),
+            'browserVersion'=>$agent->version($agent->browser()),
+            'platform'=>$agent->platform(),
+            'platformVersion'=>$agent->version($agent->platform()),
+            'device'=>$agent->device()
+        );
 
     }
     public function authorisation(){
@@ -35,7 +54,7 @@ class RBPController extends Controller
                 $otherData=array($secretKey,$saltKey,$encryptDecryptKey);
                 return curl($url,'POST',null,$otherData);
         }catch (\Exception $exception){
-            return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
+            return ['response'=>false,'message'=>$exception->getMessage()];
         }
     }
 
@@ -80,8 +99,6 @@ class RBPController extends Controller
                 return response()->json(['response'=>false,'message'=>$validator->errors()],500);
             }
             $user=Auth::user();
-
-
             $service= new ServiceController();
             $response=$service->getuserwiseService(Auth::user()->id,16,1);
 
@@ -340,16 +357,16 @@ class RBPController extends Controller
                 'customername'=>$name,
                 'customerpinCode'=>$pinCode
                 );
-            logger($postData);
+            //logger($postData);
             $encryptData=array('data'=>$this->encryption($postData));
-
-                $newCustomer=curl($url,'POST',json_encode($postData),$this->header);
+            //logger(json_encode($encryptData));
+                $newCustomer=curl($url,'POST',json_encode($encryptData),$this->header);
                 logger($newCustomer);
                 if($newCustomer['response']){
                     $data=$newCustomer['data'];
                     $newCustomer=$data->data;
                     if($data->isSuccess){
-                         $response=AepsCustomers::upateOrCreate(
+                         $response=AepsCustomers::updateOrCreate(
                             ['contact'=>$contact],
                             [
                                 'name'=>$newCustomer->customerName,
@@ -359,7 +376,7 @@ class RBPController extends Controller
                                 'created_at'=>now()
                             ]
                         );
-                         return ['response'=>true,'message'=>'Success','data'=>$response];
+                         return ['response'=>true,'message'=>'Success','data'=>$newCustomer];
                     }else{
                         return ['response'=>false,'message'=>$data->message];
                     }
@@ -368,7 +385,7 @@ class RBPController extends Controller
                 }
 
         }catch (\Exception $exception){
-            return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
+            return ['response'=>false,'message'=>$exception->getMessage()];
         }
     }
 
@@ -396,7 +413,7 @@ class RBPController extends Controller
         try {
             $data=BankList::orderBy('bankName','ASC')->get();
             if($data->count()>0){
-                return response()->json(['response'=>true,'message'=>"Success",'data'=>$data]);
+                return response()->json(['response'=>true,'message'=>"success",'data'=>$data]);
             }else{
                 $response=$this->updateBankList();
                 return response()->json($response);
@@ -419,7 +436,8 @@ class RBPController extends Controller
                         $insertData[]=array(
                             'bankiin'=>$bl->bankIin,
                             'bankName'=>$bl->bankName,
-                            'created_at'=>now()
+                            'created_at'=>now(),
+                            'updated_at'=>now()
                         );
                     }
                     BankList::truncate();
@@ -441,58 +459,147 @@ class RBPController extends Controller
             $input=json_decode($request->getContent(), true);
             $service= new ServiceController();
             $myService=$service->getuserwiseService(Auth::user()->id,16,1);
-
-            $validator=Validator::make($input,[
-                'customerId'=>'required|string',
-                'Amount'=>'required',
-                'aadhaarNo'=>'required|integer|digits:12',
-                'bankIIN'=>'required',
-                'txnCode'=>'required|string',
-                'Latitude'=>'required',
-                'Longitude'=>'required',
-                'fingerData'=>'required'
-            ]);
+            $rules=[
+                'txnAmount'=>'required',
+                'aadhaarNumber'=>'required|integer|digits:12',
+                'bankList'=>'required|integer',
+                'latitude'=>'required',
+                'longitude'=>'required',
+                'customerFingerPrint'=>'required',
+                'txnType'=>'required|string|min:2|max:2',
+                'txnMedium'=>'required|string'
+            ];
 
             if(isset($input['customerId']) && $input['customerId']!="" && $input['customerId']!=null){
-                $validator=Validator::make($input,[
-                    'customerId'=>'required|string'
-                ]);
+                $rules['customerId']='required|string';
 
             }else{
-                $validator=Validator::make($input,[
-                    'customerContact'=>"required|integer|digits:10",
-                    'customerName'=>'required|string',
-                    'customerPin'=>'required|integer|digits:6'
-                ]);
+               $rules['customerContact']="required|integer|digits:10";
+               $rules['customerName']='required|string';
+               $rules['customerPin']='required|integer|digits:6';
             }
+            //logger($rules);
+            $validator=Validator::make($input,$rules);
             if($validator->fails()){
                 return response()->json(['response'=>false,'message'=>$validator->errors()],400);
             }
 
             if(!isset($input['customerId']) && $input['customerId']=="" && $input['customerId']==null){
                 $newCustomer=$this->customerRegistration($input['customerContact'],$input['customerName'],$input['customerPin'],$myService[0]->onBoardReferance);
+                //logger($newCustomer);
                 if($newCustomer['response']){
-                    $customerId=$newCustomer['data'][0]->rbpCustomerId;
+                    $rbpCustomerId=$newCustomer['data']->customerId;
                 }else{
                     return response()->json(['response'=>false,'message'=>"Unable to create new customer.".$newCustomer['message']]);
                 }
             }else{
-                $customerId=$input['customerId'];
+                $rbpCustomerId=$input['customerId'];
             }
+
+            $endpoint="";
+            if($input['txnType']=="CW"){
+                $endpoint="AepsFinancial/cashwithdrawal";
+            }elseif ($input['txnType']=="MS"){
+                $endpoint="AepsNonFinancial/MiniStatement";
+            }else{
+                $endpoint="AepsNonFinancial/BalanceEnquiry";
+            }
+            $url=$this->base_url.$endpoint;
+            $remoteData=array('latitude'=>$input['latitude'],
+                'longitude'=>$input['longitude'],
+                'ip'=>$request->getClientIp(),);
             $saveData=array(
-                'customerId'=>$customerId,
-                'Amount'=>$input['Amount'],
-                'aadhaarNo'=>$input['aadhaarNo'],
-                'merchant_id'=>$myService[0]->onBoardReferance,
-                'bankIIN'=>$input['bankIIN'],
-                'PipeName'=>'sbi',
-                'txnCode'=>$input['txnCode'],
-                'Latitude'=>$input['Latitude'],
-                'Longitude'=>$input['Longitude'],
-                'fingerData'=>$input['fingerData']
+                'serviceId'=>16,
+                'txnType'=>$input['txnType'],
+                'txnTime'=>now(),
+                'merchantId'=>$myService[0]->onBoardReferance,
+                'userId'=>Auth::user()->id,
+                'status'=>'initiated',
+                'bankIin'=>$input['bankList'],
+                'amount'=>$input['txnAmount'],
+                'txnMedium'=>$input['txnMedium'],
+                'route'=>'sbi',
+                'remoteDetails'=>array_merge($this->clientDetails,$remoteData),
+                'aadhaarNo'=>$input['aadhaarNumber']
             );
 
-            return response()->json(['response'=>true,'message'=>'Success','data'=>$saveData]);
+            //get customer id from aeps customer
+            $aepsCustomerData=AepsCustomers::where('rbpCustomerId',$rbpCustomerId)->limit('1')->get();
+            $customerId=$aepsCustomerData[0]->id;
+            //logger($aepsCustomerData);
+            $newTransaction= new RbpAepsTransaction();
+            $newTransaction->serviceId=16;
+            $newTransaction->txnType=$input['txnType'];
+            $newTransaction->txnDate=now();
+            $newTransaction->merchantId=$myService[0]->onBoardReferance;
+            $newTransaction->userId=Auth::user()->id;
+            $newTransaction->bankIin=$input['bankList'];
+            $newTransaction->amount=$input['txnAmount'];
+            $newTransaction->txnMedium=$input['txnMedium'];
+            $newTransaction->aadhaarNo=$input['aadhaarNumber'];
+            $newTransaction->route="sbi";
+            $newTransaction->remoteDetails=array_merge($this->clientDetails,$remoteData);
+            $newTransaction->requestData=$saveData;
+            $newTransaction->customerId=$customerId;
+            $newTransaction->status="initiated";
+            $newTransaction->save();
+            $requestData=array(
+                'customerId'=>$rbpCustomerId,
+                'Amount'=>$input['txnAmount'],
+                'aadhaarNo'=>$input['aadhaarNumber'],
+                'merchant_id'=>$myService[0]->onBoardReferance,
+                'bankIIN'=>$input['bankList'],
+                'PipeName'=>'sbi',
+                'txnCode'=>$input['txnType'],
+                'Latitude'=>$input['latitude'],
+                'Longitude'=>$input['longitude'],
+                'fingerData'=>$input['customerFingerPrint'],
+                'partnerRefId'=>$newTransaction->id,
+            );
+
+            $encryptData=json_encode(array('data'=>$this->encryption($requestData)));
+            $serverResponse=curl($url,'POST',$encryptData, $this->header);
+            logger($serverResponse);
+            $transactionResponse= RbpAepsTransaction::find($newTransaction->id);
+            if($serverResponse['response']){
+                $data=$serverResponse['data'];
+
+                if($serverResponse['data']->isSuccess){
+                    $data=$data->data;
+
+                    $transactionResponse->stan=$data->stan;
+                    //$transactionResponse->rrn=$data->rrn;
+                    $transactionResponse->rrn=time();
+                    $transactionResponse->npciCode=$data->npciCode;
+                    $transactionResponse->aadhaarNo=$data->aadhaarNo;
+                    $transactionResponse->merchantLocation=$data->merchantLocation;
+                    $transactionResponse->remainingBalance=$data->remainingBalance;
+                    $transactionResponse->bankResponseMsg=$data->bankResponseMsg;
+                    $transactionResponse->responseData=$data;
+                    $transactionResponse->status=$serverResponse['data']->message;
+                    $transactionResponse->save();
+                    return response()->json(['response'=>true,'message'=>'Success','data'=>$serverResponse['data']]);
+                }else{
+                    //$transactionResponse= RbpAepsTransaction::find($newTransaction->id);
+                    $transactionResponse->status="failed";
+                    $transactionResponse->responseData=$data;
+                    if(isset($data->message) && $data->message!=""){
+                        $transactionResponse->remark=$data->message;
+                    }else{
+                        $transactionResponse->remark="Unable to get any response from server";
+                    }
+                    $transactionResponse->save();
+                    return response()->json(['response'=>false,'message'=>"Failure",'data'=>$serverResponse['data']]);
+                }
+            }else{
+                //$transactionFailedResponse= RbpAepsTransaction::find($newTransaction->id);
+                $transactionResponse->status="failed";
+                $transactionResponse->responseData=$serverResponse['data'];
+                $transactionResponse->remark="Internal Server Error";
+                $transactionResponse->save();
+                return response()->json($serverResponse);
+            }
+
         }catch (\Exception $exception){
             return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
         }

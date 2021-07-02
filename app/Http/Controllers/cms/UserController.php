@@ -38,7 +38,13 @@ class UserController extends Controller
             return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
         }
     }
+    public function getUserAttendance(Request $request){
+        try {
 
+        }catch (\Exception $exception){
+            return response()->json(['response'=>false,'message'=>$exception->getMessage()],500);
+        }
+    }
     public function getUserGroup(Request $request){
         try {
             $userGroup=DB::table('usergroup')

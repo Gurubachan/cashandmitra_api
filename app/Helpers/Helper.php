@@ -34,7 +34,7 @@ function curl( $url, $method,$postData, $header=array()){
         if($httpCode === 200){
             return ['response'=>true,'message'=>'Success','data'=>json_decode($response)];
         }else{
-            logger($response);
+            //logger($response);
             return ['response'=>false,'response_code'=>$httpCode,'message'=>'Failure','data'=>json_decode($response)];
         }
 
